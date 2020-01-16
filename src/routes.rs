@@ -1,34 +1,35 @@
-use crate::response_types;
-use actix_web::{get, web, Responder};
-use rusqlite::{params, Connection, OpenFlags, NO_PARAMS};
+use crate::models;
+use actix_web::{get, web, Error, HttpResponse, Responder};
+use diesel::prelude::*;
+use diesel::r2d2::{self, ConnectionManager};
+
+type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
 
 #[get("/")]
 pub async fn index() -> impl Responder {
-    web::Json(response_types::MessageObj {
+    web::Json(models::MessageResponse {
         message: String::from("Welcome to danbooru-meta-api"),
     })
 }
 
 #[get("/stat")]
-pub async fn stat() -> impl Responder {
-    let conn = Connection::open_with_flags(
-        "/home/siyuan/Documents/danbooru_meta/danbooru.db",
-        OpenFlags::SQLITE_OPEN_READ_ONLY,
-    )
-    .unwrap();
-    let mut stmt = conn
-        .prepare("SELECT num_posts, num_tags, num_ratings FROM stat")
-        .unwrap();
-    let stat_rows = stmt
-        .query_map(NO_PARAMS, |row| {
-            Ok(response_types::StatObj {
-                num_posts: row.get(0).unwrap(),
-                num_tags: row.get(1).unwrap(),
-                num_ratings: row.get(2).unwrap(),
-            })
-        })
-        .unwrap()
-        .filter_map(Result::ok)
-        .collect::<Vec<response_types::StatObj>>();
-    web::Json(stat_rows[0])
+pub async fn stat(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
+    // Get the connection from connection pool
+    let conn: &SqliteConnection = &pool.get().unwrap();
+    use crate::schema::stat::dsl::*;
+    let stat_rows = stat
+        .filter(id.eq(1))
+        .limit(1)
+        .load::<models::StatObj>(conn)
+        .map_err(|_| HttpResponse::InternalServerError())?;
+
+    if stat_rows.len() != 0 {
+        Ok(HttpResponse::Ok().json(models::StatResponse {
+            num_posts: stat_rows[0].num_posts,
+            num_ratings: stat_rows[0].num_ratings,
+            num_tags: stat_rows[0].num_tags,
+        }))
+    } else {
+        Err(HttpResponse::InternalServerError())?
+    }
 }
