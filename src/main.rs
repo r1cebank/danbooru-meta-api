@@ -1,17 +1,18 @@
+#[macro_use]
+extern crate diesel;
+#[macro_use]
+extern crate log;
+
 use actix_web::middleware::Logger;
 use actix_web::{App, HttpServer};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 use dotenv;
 
-#[macro_use]
-extern crate diesel;
-#[macro_use]
-extern crate log;
-
 mod models;
 mod routes;
 mod schema;
+mod util;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -29,6 +30,7 @@ async fn main() -> std::io::Result<()> {
             .data(pool.clone())
             .service(routes::index)
             .service(routes::stat)
+            .service(routes::rand_posts)
             .wrap(Logger::default())
     })
     .bind("0.0.0.0:3939")?
