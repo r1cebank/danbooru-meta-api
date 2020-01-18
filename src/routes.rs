@@ -43,11 +43,29 @@ pub async fn rand_posts(
     let numbers = util::get_rand_ids(params.start, params.end, params.size);
     match numbers {
         Ok(numbers) => {
-            println!("{:?}", numbers);
-            println!("{:?}", params);
-            Ok(HttpResponse::Ok().json(models::MessageResponse {
-                message: String::from("Welcome to danbooru-meta-api"),
-            }))
+            // Get the connection from connection pool
+            let conn: &SqliteConnection = &pool.get().unwrap();
+            use crate::schema::posts::dsl::*;
+            let post_rows = posts
+                .filter(id.eq_any(numbers))
+                .load::<models::PostObj>(conn)
+                .map_err(|_| HttpResponse::InternalServerError())?;
+            let post_rows = post_rows
+                .into_iter()
+                .map(|row| models::PostResponse {
+                    id: row.id,
+                    post_id: row.post_id,
+                    md5: row.md5,
+                    rating: row.rating,
+                    width: row.width,
+                    height: row.height,
+                    file_ext: row.file_ext,
+                    file_size: row.file_size,
+                    source: row.source,
+                    pixiv_id: row.pixiv_id,
+                })
+                .collect();
+            Ok(HttpResponse::Ok().json(models::ResultResponse { result: post_rows }))
         }
         Err(_) => Err(HttpResponse::BadRequest())?,
     }

@@ -37,6 +37,26 @@ pub struct PostObj {
     pub pixiv_id: Option<i32>,
 }
 
+#[derive(Serialize)]
+pub struct PostResponse {
+    pub id: i32,
+    pub post_id: String,
+    pub md5: Option<String>,
+    pub rating: Option<String>,
+    pub width: Option<i32>,
+    pub height: Option<i32>,
+    pub file_ext: Option<String>,
+    pub file_size: Option<i32>,
+    pub source: Option<String>,
+    pub pixiv_id: Option<i32>,
+    // pub tags: Option<Vec<String>>,
+}
+
+#[derive(Serialize)]
+pub struct ResultResponse {
+    pub result: Vec<PostResponse>,
+}
+
 #[derive(Serialize, Debug, Copy, Clone)]
 pub struct StatResponse {
     pub num_posts: Option<i32>,
