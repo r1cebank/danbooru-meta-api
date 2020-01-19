@@ -3,9 +3,9 @@ use serde::{Deserialize, Serialize};
 #[derive(Queryable)]
 pub struct StatObj {
     pub id: i32,
-    pub num_posts: Option<i32>,
-    pub num_tags: Option<i32>,
-    pub num_ratings: Option<i32>,
+    pub num_posts: i32,
+    pub num_tags: i32,
+    pub num_ratings: i32,
 }
 
 #[derive(Queryable)]
@@ -26,9 +26,9 @@ pub struct TagObj {
 #[derive(Queryable)]
 pub struct PostObj {
     pub id: i32,
-    pub post_id: String,
-    pub md5: Option<String>,
-    pub rating: Option<String>,
+    pub post_id: i32,
+    pub md5: String,
+    pub rating: String,
     pub width: Option<i32>,
     pub height: Option<i32>,
     pub file_ext: Option<String>,
@@ -40,28 +40,29 @@ pub struct PostObj {
 #[derive(Serialize)]
 pub struct PostResponse {
     pub id: i32,
-    pub post_id: String,
-    pub md5: Option<String>,
-    pub rating: Option<String>,
+    pub post_id: i32,
+    pub md5: String,
+    pub rating: String,
     pub width: Option<i32>,
     pub height: Option<i32>,
-    pub file_ext: Option<String>,
+    pub file_ext: String,
     pub file_size: Option<i32>,
     pub source: Option<String>,
     pub pixiv_id: Option<i32>,
-    // pub tags: Option<Vec<String>>,
+    pub location: String, // pub tags: Option<Vec<String>>,
 }
 
 #[derive(Serialize)]
 pub struct ResultResponse {
     pub result: Vec<PostResponse>,
+    pub count: i32,
 }
 
 #[derive(Serialize, Debug, Copy, Clone)]
 pub struct StatResponse {
-    pub num_posts: Option<i32>,
-    pub num_tags: Option<i32>,
-    pub num_ratings: Option<i32>,
+    pub num_posts: i32,
+    pub num_tags: i32,
+    pub num_ratings: i32,
 }
 
 #[derive(Serialize)]

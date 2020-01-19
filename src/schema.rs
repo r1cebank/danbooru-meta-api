@@ -1,17 +1,17 @@
 table! {
     post_tags (id) {
         id -> Nullable<Integer>,
-        post_id -> Text,
-        tag_id -> Text,
+        post_id -> Integer,
+        tag_id -> Integer,
     }
 }
 
 table! {
     posts (id) {
         id -> Integer,
-        post_id -> Text,
-        md5 -> Nullable<Text>,
-        rating -> Nullable<Text>,
+        post_id -> Integer,
+        md5 -> Text,
+        rating -> Text,
         width -> Nullable<Integer>,
         height -> Nullable<Integer>,
         file_ext -> Nullable<Text>,
@@ -33,16 +33,16 @@ table! {
 table! {
     stat (id) {
         id -> Integer,
-        num_posts -> Nullable<Integer>,
-        num_tags -> Nullable<Integer>,
-        num_ratings -> Nullable<Integer>,
+        num_posts -> Integer,
+        num_tags -> Integer,
+        num_ratings -> Integer,
     }
 }
 
 table! {
     tags (id) {
         id -> Integer,
-        tag_id -> Nullable<Text>,
+        tag_id -> Integer,
         name -> Nullable<Text>,
         category -> Nullable<Integer>,
     }

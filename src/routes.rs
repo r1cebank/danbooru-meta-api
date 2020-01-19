@@ -1,6 +1,6 @@
 use crate::models;
 use crate::util;
-use actix_web::{get, web, Error, HttpResponse, Responder};
+use actix_web::{get, web, Error, HttpResponse};
 use diesel::prelude::*;
 use diesel::r2d2::{self, ConnectionManager};
 
@@ -50,22 +50,29 @@ pub async fn rand_posts(
                 .filter(id.eq_any(numbers))
                 .load::<models::PostObj>(conn)
                 .map_err(|_| HttpResponse::InternalServerError())?;
-            let post_rows = post_rows
-                .into_iter()
-                .map(|row| models::PostResponse {
+            let mut all_posts = Vec::new();
+            for row in post_rows {
+                let ext = row.file_ext.unwrap();
+                let location = format!("{}/{}.{}", row.post_id % 1000, row.post_id, ext);
+                all_posts.push(models::PostResponse {
                     id: row.id,
                     post_id: row.post_id,
                     md5: row.md5,
                     rating: row.rating,
                     width: row.width,
                     height: row.height,
-                    file_ext: row.file_ext,
+                    file_ext: ext,
                     file_size: row.file_size,
                     source: row.source,
                     pixiv_id: row.pixiv_id,
+                    location: location,
                 })
-                .collect();
-            Ok(HttpResponse::Ok().json(models::ResultResponse { result: post_rows }))
+            }
+            let num_posts = all_posts.len() as i32;
+            Ok(HttpResponse::Ok().json(models::ResultResponse {
+                result: all_posts,
+                count: num_posts,
+            }))
         }
         Err(_) => Err(HttpResponse::BadRequest())?,
     }
