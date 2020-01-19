@@ -17,15 +17,15 @@ pub async fn index() -> Result<HttpResponse, Error> {
 pub async fn stat(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
     // Get the connection from connection pool
     let conn: &SqliteConnection = &pool.get().unwrap();
-    use crate::schema::stat::dsl::*;
-    let stat_rows = stat
+    use crate::schema::stats::dsl::*;
+    let stat_rows = stats
         .filter(id.eq(1))
         .limit(1)
-        .load::<models::StatObj>(conn)
+        .load::<models::StatsObj>(conn)
         .map_err(|_| HttpResponse::InternalServerError())?;
 
     if stat_rows.len() != 0 {
-        Ok(HttpResponse::Ok().json(models::StatResponse {
+        Ok(HttpResponse::Ok().json(models::StatsResponse {
             num_posts: stat_rows[0].num_posts,
             num_ratings: stat_rows[0].num_ratings,
             num_tags: stat_rows[0].num_tags,
@@ -45,13 +45,31 @@ pub async fn rand_posts(
         Ok(numbers) => {
             // Get the connection from connection pool
             let conn: &SqliteConnection = &pool.get().unwrap();
-            use crate::schema::posts::dsl::*;
-            let post_rows = posts
-                .filter(id.eq_any(numbers))
+            use crate::schema::post_tags;
+            use crate::schema::posts;
+            use crate::schema::tags;
+            let post_rows = posts::dsl::posts
+                .filter(posts::dsl::id.eq_any(numbers))
                 .load::<models::PostObj>(conn)
                 .map_err(|_| HttpResponse::InternalServerError())?;
             let mut all_posts = Vec::new();
             for row in post_rows {
+                let tag_ids = post_tags::dsl::post_tags
+                    .select(post_tags::dsl::tag_id)
+                    .filter(post_tags::dsl::post_id.eq(row.post_id))
+                    .load::<i32>(conn)
+                    .map_err(|_| HttpResponse::InternalServerError())?;
+                let tags = tags::dsl::tags
+                    .filter(tags::dsl::tag_id.eq_any(tag_ids))
+                    .load::<models::TagObj>(conn)
+                    .map_err(|_| HttpResponse::InternalServerError())?
+                    .into_iter()
+                    .map(|tag| models::TagResponse {
+                        id: tag.tag_id,
+                        name: tag.name,
+                        category: tag.category,
+                    })
+                    .collect::<Vec<models::TagResponse>>();
                 let ext = row.file_ext.unwrap();
                 let location = format!("{}/{}.{}", row.post_id % 1000, row.post_id, ext);
                 all_posts.push(models::PostResponse {
@@ -66,6 +84,7 @@ pub async fn rand_posts(
                     source: row.source,
                     pixiv_id: row.pixiv_id,
                     location: location,
+                    tags: tags,
                 })
             }
             let num_posts = all_posts.len() as i32;

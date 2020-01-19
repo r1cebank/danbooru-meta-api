@@ -1,6 +1,6 @@
 table! {
     post_tags (id) {
-        id -> Nullable<Integer>,
+        id -> Integer,
         post_id -> Integer,
         tag_id -> Integer,
     }
@@ -31,7 +31,7 @@ table! {
 }
 
 table! {
-    stat (id) {
+    stats (id) {
         id -> Integer,
         num_posts -> Integer,
         num_tags -> Integer,
@@ -52,6 +52,6 @@ allow_tables_to_appear_in_same_query!(
     post_tags,
     posts,
     ratings,
-    stat,
+    stats,
     tags,
 );

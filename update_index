@@ -1,0 +1,8 @@
+UPDATE stats set num_posts=(select count(rowid) as post_count from posts);
+UPDATE stats set num_tags=(select count(rowid) as tag_count from tags);
+UPDATE stats set num_ratings=(select count(rowid) as rating_count from ratings);
+CREATE INDEX pt_post_id ON post_tags (post_id);
+CREATE INDEX pt_tag_id ON post_tags (tag_id);
+CREATE INDEX p_post_id ON posts (post_id);
+CREATE INDEX t_tag_id ON tags (tag_id);
+CREATE INDEX t_tag_name ON tags (name);

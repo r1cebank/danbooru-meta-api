@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable)]
-pub struct StatObj {
+pub struct StatsObj {
     pub id: i32,
     pub num_posts: i32,
     pub num_tags: i32,
@@ -11,14 +11,14 @@ pub struct StatObj {
 #[derive(Queryable)]
 pub struct PostTagObj {
     pub id: i32,
-    pub post_id: Option<String>,
-    pub tag_id: Option<String>,
+    pub post_id: i32,
+    pub tag_id: i32,
 }
 
 #[derive(Queryable)]
 pub struct TagObj {
     pub id: i32,
-    pub tag_id: Option<String>,
+    pub tag_id: i32,
     pub name: Option<String>,
     pub category: Option<i32>,
 }
@@ -49,7 +49,8 @@ pub struct PostResponse {
     pub file_size: Option<i32>,
     pub source: Option<String>,
     pub pixiv_id: Option<i32>,
-    pub location: String, // pub tags: Option<Vec<String>>,
+    pub location: String,
+    pub tags: Vec<TagResponse>,
 }
 
 #[derive(Serialize)]
@@ -58,8 +59,15 @@ pub struct ResultResponse {
     pub count: i32,
 }
 
+#[derive(Serialize)]
+pub struct TagResponse {
+    pub id: i32,
+    pub name: Option<String>,
+    pub category: Option<i32>,
+}
+
 #[derive(Serialize, Debug, Copy, Clone)]
-pub struct StatResponse {
+pub struct StatsResponse {
     pub num_posts: i32,
     pub num_tags: i32,
     pub num_ratings: i32,

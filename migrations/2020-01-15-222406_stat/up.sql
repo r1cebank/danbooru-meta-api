@@ -1,2 +1,0 @@
--- Your SQL goes here
-CREATE TABLE stat (id INTEGER PRIMARY KEY UNIQUE NOT NULL, num_posts INTEGER NOT NULL, num_tags INTEGER NOT NULL, num_ratings INTEGER NOT NULL)
