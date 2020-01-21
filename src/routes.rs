@@ -84,3 +84,23 @@ pub async fn rand_posts(
         Err(_) => Err(HttpResponse::BadRequest())?,
     }
 }
+
+#[get("/tag/{id}")]
+pub async fn tag_by_id(pool: web::Data<Pool>, params: web::Path<models::PostByIdParam>,) -> Result<HttpResponse, Error> {
+    let conn: &SqliteConnection = &pool.get().unwrap();
+    use crate::schema::tags;
+    let tag_info = tags::dsl::tags
+        .filter(tags::dsl::id.eq(params.id))
+        .limit(1)
+        .load::<models::TagObj>(conn)
+        .map_err(|_| HttpResponse::InternalServerError())?;
+    if tag_info.len() != 0 {
+        Ok(HttpResponse::Ok().json(models::TagResponse {
+            id: tag_info[0].tag_id,
+            name: tag_info[0].name,
+            category: tag_info[0].category,
+        }))
+    } else {
+        Err(HttpResponse::BadRequest())?
+    }
+}

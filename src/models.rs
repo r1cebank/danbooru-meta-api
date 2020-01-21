@@ -83,9 +83,14 @@ pub struct ErrorResponse {
     pub message: String,
 }
 
-#[derive(Debug, Deserialize)]
+#[derive(Deserialize)]
 pub struct RandPostParam {
     pub start: i32,
     pub end: i32,
     pub size: i32,
+}
+
+#[derive(Deserialize)]
+pub struct PostByIdParam {
+    pub id: i32,
 }
