@@ -47,7 +47,6 @@ pub async fn rand_posts(
             let conn: &SqliteConnection = &pool.get().unwrap();
             use crate::schema::post_tags;
             use crate::schema::posts;
-            use crate::schema::tags;
             let post_rows = posts::dsl::posts
                 .filter(posts::dsl::id.eq_any(numbers))
                 .load::<models::PostObj>(conn)
@@ -59,17 +58,6 @@ pub async fn rand_posts(
                     .filter(post_tags::dsl::post_id.eq(row.post_id))
                     .load::<i32>(conn)
                     .map_err(|_| HttpResponse::InternalServerError())?;
-                let tags = tags::dsl::tags
-                    .filter(tags::dsl::tag_id.eq_any(tag_ids))
-                    .load::<models::TagObj>(conn)
-                    .map_err(|_| HttpResponse::InternalServerError())?
-                    .into_iter()
-                    .map(|tag| models::TagResponse {
-                        id: tag.tag_id,
-                        name: tag.name,
-                        category: tag.category,
-                    })
-                    .collect::<Vec<models::TagResponse>>();
                 let ext = row.file_ext.unwrap();
                 let location = format!("{}/{}.{}", row.post_id % 1000, row.post_id, ext);
                 all_posts.push(models::PostResponse {
@@ -84,7 +72,7 @@ pub async fn rand_posts(
                     source: row.source,
                     pixiv_id: row.pixiv_id,
                     location: location,
-                    tags: tags,
+                    tags: tag_ids,
                 })
             }
             let num_posts = all_posts.len() as i32;

@@ -50,7 +50,7 @@ pub struct PostResponse {
     pub source: Option<String>,
     pub pixiv_id: Option<i32>,
     pub location: String,
-    pub tags: Vec<TagResponse>,
+    pub tags: Vec<i32>,
 }
 
 #[derive(Serialize)]
