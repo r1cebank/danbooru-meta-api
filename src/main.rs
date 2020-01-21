@@ -31,6 +31,7 @@ async fn main() -> std::io::Result<()> {
             .service(routes::index)
             .service(routes::stat)
             .service(routes::rand_posts)
+            .service(routes::tag_by_id)
             .wrap(Logger::default())
     })
     .bind("0.0.0.0:3939")?
