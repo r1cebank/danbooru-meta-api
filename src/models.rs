@@ -1,4 +1,9 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
+
+use rocket_contrib::databases::diesel;
+
+#[database("metadata_database")]
+pub struct MetadataDb(diesel::SqliteConnection);
 
 #[derive(Queryable)]
 pub struct StatsObj {
@@ -83,14 +88,9 @@ pub struct ErrorResponse {
     pub message: String,
 }
 
-#[derive(Deserialize)]
+#[derive(FromForm)]
 pub struct RandPostParam {
     pub start: i32,
     pub end: i32,
     pub size: i32,
-}
-
-#[derive(Deserialize)]
-pub struct PostByIdParam {
-    pub id: i32,
 }

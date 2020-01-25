@@ -1,63 +1,51 @@
 use crate::models;
 use crate::util;
-use actix_web::{get, web, Error, HttpResponse};
 use diesel::prelude::*;
-use diesel::r2d2::{self, ConnectionManager};
-
-type Pool = r2d2::Pool<ConnectionManager<SqliteConnection>>;
+use rocket::request::Form;
+use rocket_contrib::json::{Json, JsonValue};
 
 #[get("/")]
-pub async fn index() -> Result<HttpResponse, Error> {
-    Ok(HttpResponse::Ok().json(models::MessageResponse {
+pub fn index() -> Json<models::MessageResponse> {
+    Json(models::MessageResponse {
         message: String::from("Welcome to danbooru-meta-api"),
-    }))
+    })
 }
 
 #[get("/stat")]
-pub async fn stat(pool: web::Data<Pool>) -> Result<HttpResponse, Error> {
-    // Get the connection from connection pool
-    let conn: &SqliteConnection = &pool.get().unwrap();
+pub fn stat(conn: models::MetadataDb) -> JsonValue {
     use crate::schema::stats::dsl::*;
-    let stat_rows = stats
-        .filter(id.eq(1))
-        .limit(1)
-        .load::<models::StatsObj>(conn)
-        .map_err(|_| HttpResponse::InternalServerError())?;
+    let stat_row = stats.filter(id.eq(1)).first::<models::StatsObj>(&*conn);
 
-    if stat_rows.len() != 0 {
-        Ok(HttpResponse::Ok().json(models::StatsResponse {
-            num_posts: stat_rows[0].num_posts,
-            num_ratings: stat_rows[0].num_ratings,
-            num_tags: stat_rows[0].num_tags,
-        }))
-    } else {
-        Err(HttpResponse::InternalServerError())?
+    match stat_row {
+        Ok(row) => json!(models::StatsResponse {
+            num_posts: row.num_posts,
+            num_ratings: row.num_ratings,
+            num_tags: row.num_tags,
+        }),
+        Err(_) => json!(models::ErrorResponse {
+            message: String::from("Error reading database"),
+        }),
     }
 }
 
-#[get("/rand_posts")]
-pub async fn rand_posts(
-    pool: web::Data<Pool>,
-    params: web::Query<models::RandPostParam>,
-) -> Result<HttpResponse, Error> {
+#[get("/rand_posts?<params..>")]
+pub fn rand_posts(conn: models::MetadataDb, params: Form<models::RandPostParam>) -> JsonValue {
     let numbers = util::get_rand_ids(params.start, params.end, params.size);
     match numbers {
         Ok(numbers) => {
-            // Get the connection from connection pool
-            let conn: &SqliteConnection = &pool.get().unwrap();
             use crate::schema::post_tags;
             use crate::schema::posts;
             let post_rows = posts::dsl::posts
                 .filter(posts::dsl::id.eq_any(numbers))
-                .load::<models::PostObj>(conn)
-                .map_err(|_| HttpResponse::InternalServerError())?;
+                .load::<models::PostObj>(&*conn)
+                .unwrap();
             let mut all_posts = Vec::new();
             for row in post_rows {
                 let tag_ids = post_tags::dsl::post_tags
                     .select(post_tags::dsl::tag_id)
                     .filter(post_tags::dsl::post_id.eq(row.post_id))
-                    .load::<i32>(conn)
-                    .map_err(|_| HttpResponse::InternalServerError())?;
+                    .load::<i32>(&*conn)
+                    .unwrap();
                 let ext = row.file_ext.unwrap();
                 let location = format!("{}/{}.{}", row.post_id % 1000, row.post_id, ext);
                 all_posts.push(models::PostResponse {
@@ -76,30 +64,31 @@ pub async fn rand_posts(
                 })
             }
             let num_posts = all_posts.len() as i32;
-            Ok(HttpResponse::Ok().json(models::ResultResponse {
+            json!(models::ResultResponse {
                 result: all_posts,
                 count: num_posts,
-            }))
+            })
         }
-        Err(_) => Err(HttpResponse::BadRequest())?,
+        Err(_) => json!(models::ErrorResponse {
+            message: String::from("Number out of bounds"),
+        }),
     }
 }
 
-#[get("/tag/{id}")]
-pub async fn tag_by_id(
-    pool: web::Data<Pool>,
-    params: web::Path<models::PostByIdParam>,
-) -> Result<HttpResponse, Error> {
-    println!("ID is {}", params.id);
-    let conn: &SqliteConnection = &pool.get().unwrap();
+#[get("/tag/<id>")]
+pub fn tag_by_id(conn: models::MetadataDb, id: i32) -> JsonValue {
     use crate::schema::tags;
     let tag_info = tags::dsl::tags
-        .filter(tags::dsl::tag_id.eq(params.id))
-        .first::<models::TagObj>(conn)
-        .map_err(|_| HttpResponse::BadRequest())?;
-    Ok(HttpResponse::Ok().json(models::TagResponse {
-        id: tag_info.tag_id,
-        name: tag_info.name,
-        category: tag_info.category,
-    }))
+        .filter(tags::dsl::tag_id.eq(id))
+        .first::<models::TagObj>(&*conn);
+    match tag_info {
+        Ok(tag) => json!(models::TagResponse {
+            id: tag.tag_id,
+            name: tag.name,
+            category: tag.category,
+        }),
+        Err(_) => json!(models::ErrorResponse {
+            message: String::from("Error reading database"),
+        }),
+    }
 }
