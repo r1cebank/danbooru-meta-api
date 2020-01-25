@@ -94,3 +94,9 @@ pub struct RandPostParam {
     pub end: i32,
     pub size: i32,
 }
+
+#[derive(FromForm)]
+pub struct BatchParam {
+    pub batch_size: u32,
+    pub batch_number: u32,
+}

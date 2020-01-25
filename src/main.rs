@@ -21,7 +21,8 @@ fn main() {
                 routes::index,
                 routes::stat,
                 routes::tag_by_id,
-                routes::rand_posts
+                routes::rand_posts,
+                routes::get_batch
             ],
         )
         .launch();

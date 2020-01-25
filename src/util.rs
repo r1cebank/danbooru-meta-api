@@ -44,3 +44,23 @@ pub fn get_rand_ids(start: i32, end: i32, size: i32) -> Result<Vec<i32>, ErrorTy
         Ok(numbers)
     }
 }
+
+pub fn get_batch_ids(
+    batch_number: u32,
+    batch_size: u32,
+    sample_size: u32,
+    dataset_size: u32,
+) -> Result<(u32, u32), ErrorType> {
+    if sample_size > dataset_size {
+        Err(ErrorType::new("Range out of bounds"))
+    } else {
+        if batch_number * batch_size > sample_size {
+            Err(ErrorType::new("Batch number out of bounds"))
+        } else {
+            Ok((
+                ((batch_number * batch_size) + 1),
+                ((batch_number + 1) * batch_size),
+            ))
+        }
+    }
+}
