@@ -1,6 +1,15 @@
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
+use std::sync::RwLock;
 
 use rocket_contrib::databases::diesel;
+
+#[derive(Deserialize)]
+pub struct BatchConfig {
+    batch_size: u32,
+}
+
+pub type BatchHashMap = RwLock<HashMap<String, BatchConfig>>;
 
 #[database("metadata_database")]
 pub struct MetadataDb(diesel::SqliteConnection);
@@ -62,6 +71,11 @@ pub struct PostResponse {
 pub struct ResultResponse {
     pub result: Vec<PostResponse>,
     pub count: i32,
+}
+
+#[derive(Serialize)]
+pub struct BatchIdResponse {
+    pub id: String,
 }
 
 #[derive(Serialize)]

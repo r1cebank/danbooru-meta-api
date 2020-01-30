@@ -2,7 +2,9 @@ use crate::models;
 use crate::util;
 use diesel::prelude::*;
 use rocket::request::Form;
+use rocket::State;
 use rocket_contrib::json::{Json, JsonValue};
+use uuid::Uuid;
 
 #[get("/")]
 pub fn index() -> Json<models::MessageResponse> {
@@ -28,7 +30,35 @@ pub fn stat(conn: models::MetadataDb) -> JsonValue {
     }
 }
 
-#[get("/rand_posts?<params..>")]
+#[post("/posts/batch", format = "json", data = "<batch_config>")]
+pub fn create_batch(
+    batches: State<models::BatchHashMap>,
+    batch_config: Json<models::BatchConfig>,
+) -> JsonValue {
+    let mut map = batches.write().expect("rwLock is poisioned");
+    let mut encoder = Uuid::encode_buffer();
+    let uuid = Uuid::new_v4().to_simple().encode_lower(&mut encoder);
+    map.insert(uuid.to_string(), batch_config.into_inner());
+    json!(models::BatchIdResponse {
+        id: uuid.to_string()
+    })
+}
+
+#[get("/posts/batch/<id>")]
+pub fn get_batch(batches: State<models::BatchHashMap>, id: String) -> JsonValue {
+    let map = batches.read().expect("rwLock is poisioned");
+    if let Some(batch_config) = map.get(&id) {
+        json!(models::ErrorResponse {
+            message: String::from("Not implemented")
+        })
+    } else {
+        json!(models::ErrorResponse {
+            message: String::from("Batch not found")
+        })
+    }
+}
+
+#[get("/posts/random?<params..>")]
 pub fn rand_posts(conn: models::MetadataDb, params: Form<models::RandPostParam>) -> JsonValue {
     let numbers = util::get_rand_ids(params.start, params.end, params.size);
     match numbers {
@@ -75,8 +105,8 @@ pub fn rand_posts(conn: models::MetadataDb, params: Form<models::RandPostParam>)
     }
 }
 
-#[get("/get_batch?<params..>")]
-pub fn get_batch(conn: models::MetadataDb, params: Form<models::BatchParam>) -> JsonValue {
+#[get("/posts?<params..>")]
+pub fn get_posts(conn: models::MetadataDb, params: Form<models::BatchParam>) -> JsonValue {
     use crate::schema::post_tags;
     use crate::schema::posts;
     let post_rows = posts::dsl::posts
