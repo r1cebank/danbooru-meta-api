@@ -1,2 +1,2 @@
 [global.databases]
-metadata_database = { url = "/home/siyuan/Documents/danbooru-meta-api/metadata.sqlite3" }
+metadata_database = { url = "/db/metadata.sqlite3" }
