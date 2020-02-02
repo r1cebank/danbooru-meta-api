@@ -1,0 +1,2 @@
+[global.databases]
+metadata_database = { url = "/db/metadata.sqlite3" }

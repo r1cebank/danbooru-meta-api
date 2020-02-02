@@ -14,5 +14,6 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get -y install ca-certificates sqlite3 libssl-dev && rm -rf /var/lib/apt/lists/*
 
 COPY --from=build /build/danbooru_meta_api /
+COPY --from=build /Rocket.deploy.toml /Rocket.toml
 
 CMD /danbooru_meta_api
