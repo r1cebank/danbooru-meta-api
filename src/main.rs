@@ -8,6 +8,7 @@ extern crate rocket_contrib;
 extern crate rocket;
 use std::collections::HashMap;
 
+mod db;
 mod models;
 mod routes;
 mod schema;
@@ -18,6 +19,7 @@ fn main() {
     rocket::ignite()
         .manage(batch_configs)
         .attach(models::MetadataDb::fairing())
+        .register(catchers![routes::not_found])
         .mount(
             "/",
             routes![
@@ -27,7 +29,10 @@ fn main() {
                 routes::rand_posts,
                 routes::get_posts,
                 routes::create_batch,
-                routes::get_batch
+                routes::get_train_batch,
+                routes::get_test_batch,
+                routes::get_validation_batch,
+                routes::get_batch_info
             ],
         )
         .launch();
