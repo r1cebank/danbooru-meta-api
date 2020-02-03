@@ -214,5 +214,20 @@ Get info about a specific batch id
     "validation_batches": 2897
 }
 ```
+
+## How batch is created
+
+When requesting POST /posts/batch, app will request stat from the metadata database and grab the number of posts available. Then it ran a bunch of simple partition logic
+
+1. Posts ids are broken into partition (start, end) tuples, number of partitions = total_posts / batch_size * 2
+2. Random ids are chosen from each partition, this gives us batches with post ids
+3. The batches is then shuffled
+4. Based on the verification and test split, batch is picked from the list of batches and set to each category
+5. Final result stored inside server memory hashmap, an id that points to the result is returned to user.
+
+## Randomization
+
+You can provide a seed with each random request to make the randomization predictable, this is useful to reproduce results and make sure same batch is always created.
+
 ## N+1 problem with SQLite
 Because we are using sqlite for the data backend (mainly for the portability), we are using executing many query with each api call, some might call this inefficient but with SQLite it is very efficient. As shown here https://www.sqlite.org/np1queryprob.html
