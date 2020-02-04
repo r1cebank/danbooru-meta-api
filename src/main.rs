@@ -6,6 +6,7 @@ extern crate log;
 extern crate rocket_contrib;
 #[macro_use]
 extern crate rocket;
+extern crate rand_chacha;
 use std::collections::HashMap;
 
 mod db;

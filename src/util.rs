@@ -2,7 +2,7 @@ extern crate rand;
 
 use crate::models;
 use rand::seq::SliceRandom;
-use rand::{thread_rng, Rng};
+use rand::Rng;
 use std::error::Error;
 use std::fmt;
 
@@ -31,11 +31,15 @@ impl Error for ErrorType {
     }
 }
 
-pub fn get_rand_ids(start: u32, end: u32, size: u32) -> Result<Vec<u32>, ErrorType> {
+pub fn get_rand_ids<R: Rng>(
+    start: u32,
+    end: u32,
+    size: u32,
+    rng: &mut R,
+) -> Result<Vec<u32>, ErrorType> {
     if size > (end - start) {
         Err(ErrorType::new("Range out of bounds"))
     } else {
-        let mut rng = rand::thread_rng();
         let mut numbers = Vec::new();
         while (numbers.len() as u32) < size {
             let random_number: u32 = rng.gen_range(start, end);
@@ -47,11 +51,12 @@ pub fn get_rand_ids(start: u32, end: u32, size: u32) -> Result<Vec<u32>, ErrorTy
     }
 }
 
-pub fn create_batches(
+pub fn create_batches<R: Rng>(
     total_posts: u32,
     batch_size: u32,
     validation_split: u8,
     test_split: u8,
+    rng: &mut R,
 ) -> models::Batches {
     // 1. Calculate number of batches using total_posts / batch_size * 2
     let partition_size = batch_size * 2;
@@ -75,10 +80,10 @@ pub fn create_batches(
     }
     let mut partition_ids = Vec::new();
     for partition in partitions.into_iter() {
-        partition_ids.push(get_rand_ids(partition.0, partition.1 + 1, batch_size).unwrap());
+        partition_ids.push(get_rand_ids(partition.0, partition.1 + 1, batch_size, rng).unwrap());
     }
     // Shuffle the ids so we are picking from random partitions
-    partition_ids.shuffle(&mut thread_rng());
+    partition_ids.shuffle(rng);
     let mut train_ids = Vec::new();
     let mut validation_ids = Vec::new();
     let mut test_ids = Vec::new();

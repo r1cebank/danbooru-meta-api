@@ -101,7 +101,8 @@ Create a batch
 {
 	"batch_size": 64, // Size of each batch
 	"validation_split": 10, // Validation data percentage split
-	"test_split": 10 // Test data percentage split
+    "test_split": 10, // Test data percentage split
+    "seed": 123131231 // Seed used to see rng during batch creating, creates reproducible results
 }
 ```
 **Response**

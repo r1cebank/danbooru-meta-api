@@ -11,6 +11,7 @@ use rocket_contrib::databases::diesel;
 
 #[derive(Deserialize)]
 pub struct BatchConfig {
+    pub seed: u64,
     pub batch_size: u32,
     pub validation_split: u8,
     pub test_split: u8,

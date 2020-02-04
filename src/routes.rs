@@ -2,6 +2,7 @@ use crate::db;
 use crate::models;
 use crate::util;
 use diesel::prelude::*;
+use rand::{thread_rng, SeedableRng};
 use rocket::http::Status;
 use rocket::request::Form;
 use rocket::State;
@@ -55,11 +56,13 @@ pub fn create_batch(
     match stat_row {
         Ok(row) => {
             // Using stat and the batch config to get batch ids
+            let mut rng = rand_chacha::ChaCha8Rng::seed_from_u64(batch_config.seed);
             let batches = util::create_batches(
                 row.num_posts as u32,
                 batch_config.batch_size,
                 batch_config.validation_split,
                 batch_config.test_split,
+                &mut rng,
             );
             map.insert(uuid.to_string(), batches);
             models::ApiResponse {
@@ -223,7 +226,8 @@ pub fn rand_posts(
     conn: models::MetadataDb,
     params: Form<models::RandPostParam>,
 ) -> models::ApiResponse {
-    let numbers = util::get_rand_ids(params.start, params.end, params.size);
+    let mut rng = thread_rng();
+    let numbers = util::get_rand_ids(params.start, params.end, params.size, &mut rng);
     match numbers {
         Ok(numbers) => {
             let all_posts = db::get_posts_by_id(conn, &numbers).unwrap();
