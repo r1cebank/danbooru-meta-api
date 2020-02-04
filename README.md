@@ -7,6 +7,10 @@ A node.js based microservice aimed to serve danbooru2019 dataset over API, with 
 docker run -d -v metadbpath:/db/metadata.sqlite3 -p 3939:8000 r1cebank/danbooru-meta-api
 ```
 
+### Where do I get the metadata db?
+You can generate them from the metadata repo
+https://github.com/r1cebank/danbooru-meta
+
 ## Endpoints
 
 ### GET /stat
