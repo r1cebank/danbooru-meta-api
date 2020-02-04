@@ -112,6 +112,20 @@ Create a batch
 }
 ```
 
+### GET /posts/batch/list
+List all the batches in the system
+
+**Response**
+
+```json
+{
+    "id": [
+        "9ff686fcdce64aeb8d207f31abef0b0b",
+        "e771b3c36a3b499bb91471bf9a176364"
+    ]
+}
+```
+
 ### GET /posts/batch/<id>/train/<batch_number>
 Get a specific training batch for batch id
 

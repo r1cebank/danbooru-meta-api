@@ -33,7 +33,8 @@ fn main() {
                 routes::get_train_batch,
                 routes::get_test_batch,
                 routes::get_validation_batch,
-                routes::get_batch_info
+                routes::get_batch_info,
+                routes::get_batch_list
             ],
         )
         .launch();

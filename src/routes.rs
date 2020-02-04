@@ -81,6 +81,17 @@ pub fn create_batch(
     }
 }
 
+#[get("/posts/batch/list")]
+pub fn get_batch_list(batches: State<models::BatchHashMap>) -> models::ApiResponse {
+    let map = batches.read().expect("rwLock is poisioned");
+    models::ApiResponse {
+        json: json!(models::BatchListResponse {
+            id: map.keys().map(|k| String::from(k)).collect()
+        }),
+        status: Status::Ok,
+    }
+}
+
 #[get("/posts/batch/<id>/info")]
 pub fn get_batch_info(batches: State<models::BatchHashMap>, id: String) -> models::ApiResponse {
     let map = batches.read().expect("rwLock is poisioned");

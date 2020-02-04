@@ -91,6 +91,11 @@ pub struct PostResponse {
 }
 
 #[derive(Serialize)]
+pub struct BatchListResponse {
+    pub id: Vec<String>,
+}
+
+#[derive(Serialize)]
 pub struct ResultResponse {
     pub result: Vec<PostResponse>,
     pub count: i32,
