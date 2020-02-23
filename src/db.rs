@@ -23,7 +23,7 @@ pub fn get_posts_by_id(
             .load::<i32>(&*conn)
             .unwrap();
         let ext = row.file_ext.unwrap();
-        let location = format!("{}/{}.{}", row.post_id % 1000, row.post_id, ext);
+        let location = format!("files/{}/{}.{}", row.post_id % 1000, row.post_id, ext);
         all_posts.push(models::PostResponse {
             id: row.id,
             post_id: row.post_id,

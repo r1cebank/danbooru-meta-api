@@ -1,2 +1,5 @@
 [global.databases]
 metadata_database = { url = "/db/metadata.sqlite3" }
+
+[global]
+assets_dir = "/files"

@@ -7,6 +7,7 @@ extern crate rocket_contrib;
 #[macro_use]
 extern crate rocket;
 extern crate rand_chacha;
+use rocket_contrib::serve::StaticFiles;
 use std::collections::HashMap;
 
 mod db;
@@ -37,5 +38,6 @@ fn main() {
                 routes::get_batch_list
             ],
         )
+        .mount("/files", StaticFiles::from("/files"))
         .launch();
 }
