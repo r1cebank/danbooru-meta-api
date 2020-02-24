@@ -16,4 +16,6 @@ RUN apt-get update && apt-get -y install ca-certificates sqlite3 libssl-dev && r
 COPY --from=build /build/danbooru_meta_api /
 COPY --from=build /Rocket.deploy.toml /Rocket.toml
 
+EXPOSE 8000
+
 CMD /danbooru_meta_api
